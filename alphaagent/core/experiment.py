@@ -125,7 +125,9 @@ class FBWorkspace(Workspace):
                 workspace_data_file_path.unlink()
             if platform.system() == "Linux":
                 os.symlink(data_file_path, workspace_data_file_path)
-            if platform.system() == "Windows":
+            elif platform.system() == "Darwin":  # macOS
+                os.symlink(data_file_path, workspace_data_file_path)
+            elif platform.system() == "Windows":
                 os.link(data_file_path, workspace_data_file_path)
 
     def inject_code(self, **files: str) -> None:

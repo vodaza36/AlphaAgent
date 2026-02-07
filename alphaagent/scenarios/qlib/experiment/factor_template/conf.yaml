@@ -6,15 +6,15 @@
 # benchmark: &benchmark SPX
 
 qlib_init:
-    provider_uri: "~/.qlib/qlib_data/cn_data"
-    region: cn
+    provider_uri: "~/.qlib/qlib_data/us_data"
+    region: us
 
-market: &market csi500
-benchmark: &benchmark SH000905
+market: &market SP500
+benchmark: &benchmark SPX
 
 data_handler_config: &data_handler_config
-    start_time: 2019-01-01
-    end_time: 2025-03-31
+    start_time: 2015-01-02
+    end_time: 2020-11-10
     instruments: *market
     data_loader:
         class: qlib.contrib.data.loader.QlibDataLoader
@@ -65,19 +65,19 @@ port_analysis_config: &port_analysis_config
             topk: 100
             n_drop: 5
     backtest:
-        start_time: 2024-01-01
-        end_time: 2025-03-31
+        start_time: 2020-01-01
+        end_time: 2020-11-10
         account: 10000000
         benchmark: *benchmark
         exchange_kwargs:
             limit_threshold: 0.095
             deal_price: close
-            open_cost: 0.0005
-            close_cost: 0.0015
-            min_cost: 5
-            # open_cost: 0.0
-            # close_cost: 0.0005
-            # min_cost: 0
+            #open_cost: 0.0005
+            #close_cost: 0.0015
+            #min_cost: 5
+            open_cost: 0.0
+            close_cost: 0.0005
+            min_cost: 0
 
 
 task:
@@ -127,9 +127,9 @@ task:
                 module_path: qlib.contrib.data.handler
                 kwargs: *data_handler_config
             segments:
-                train: [2019-01-01, 2023-06-01]
-                valid: [2023-06-01, 2023-12-31]
-                test: [2024-01-01, 2025-03-31]
+                train: [2015-01-02, 2018-12-31]
+                valid: [2019-01-01, 2019-12-31]
+                test: [2020-01-01, 2020-11-10]
     record: 
         - class: SignalRecord
           module_path: qlib.workflow.record_temp
