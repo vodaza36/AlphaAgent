@@ -27,21 +27,21 @@ This repository follows the implementation of [RD-Agent](https://github.com/micr
 
 # ⚡ Quick start
 
-### 🐍 Create a Conda Environment
-- Create a new conda environment with Python (3.10 and 3.11 are well-tested in our CI):
+### 🐍 Create a Virtual Environment
+- Create a new virtual environment with Python (3.10 and 3.11 are well-tested in our CI):
   ```sh
-  conda create -n alphaagent python=3.10
+  uv venv --python 3.10
   ```
 - Activate the environment:
   ```sh
-  conda activate alphaagent
+  source .venv/bin/activate
   ```
 
 ### 🛠️ Install locally
-- 
+-
   ```sh
   # Install AlphaAgent
-  pip install -e .
+  uv pip install -e .
   ```
 
 ### 📈 Data Preparation
@@ -50,7 +50,7 @@ This repository follows the implementation of [RD-Agent](https://github.com/micr
   # Clone Qlib source code
   git clone https://github.com/microsoft/qlib.git
   cd qlib
-  pip install .
+  uv pip install .
   cd ..
   ```
 
