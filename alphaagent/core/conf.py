@@ -16,7 +16,9 @@ from pydantic_settings import (
 
 
 class ExtendedEnvSettingsSource(EnvSettingsSource):
-    def get_field_value(self, field: FieldInfo, field_name: str) -> tuple[Any, str, bool]:
+    def get_field_value(
+        self, field: FieldInfo, field_name: str
+    ) -> tuple[Any, str, bool]:
         # Dynamically gather prefixes from the current and parent classes
         prefixes = [self.config.get("env_prefix", "")]
         if hasattr(self.settings_cls, "__bases__"):
@@ -27,7 +29,9 @@ class ExtendedEnvSettingsSource(EnvSettingsSource):
                         prefixes.append(parent_prefix)
         for prefix in prefixes:
             self.env_prefix = prefix
-            env_val, field_key, value_is_complex = super().get_field_value(field, field_name)
+            env_val, field_key, value_is_complex = super().get_field_value(
+                field, field_name
+            )
             if env_val is not None:
                 return env_val, field_key, value_is_complex
 
@@ -57,6 +61,7 @@ class RDAgentSettings(ExtendedBaseSettings):
     # Log configs
     # TODO: (xiao) think it can be a separate config.
     log_trace_path: str | None = None
+    enable_perf_log: bool = False
 
     # azure document intelligence configs
     azure_document_intelligence_key: str = ""

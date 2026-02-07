@@ -10,6 +10,7 @@ Postscripts:
 
 import datetime
 import pickle
+import threading
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -19,7 +20,8 @@ from tqdm.auto import tqdm
 
 from alphaagent.core.exception import CoderError
 from alphaagent.log import logger
-import threading
+from alphaagent.log.perf import log_loop_summary, log_step
+
 
 class LoopMeta(type):
     @staticmethod
@@ -36,7 +38,9 @@ class LoopMeta(type):
         # import pdb; pdb.set_trace()
         steps = []
         for base in bases:
-            for step in LoopMeta._get_steps(base.__bases__) + getattr(base, "steps", []):
+            for step in LoopMeta._get_steps(base.__bases__) + getattr(
+                base, "steps", []
+            ):
                 if step not in steps:
                     steps.append(step)
         return steps
@@ -95,6 +99,8 @@ class LoopBase:
             How many steps to run;
             `None` indicates to run forever until error or KeyboardInterrupt
         """
+        loop_start_time: datetime.datetime | None = None  # Track loop start for summary
+
         with tqdm(total=len(self.steps), desc="Workflow Progress", unit="step") as pbar:
             while True:
                 if step_n is not None:
@@ -104,22 +110,48 @@ class LoopBase:
 
                 li, si = self.loop_idx, self.step_idx
 
+                # Track loop start time at step 0
+                if si == 0:
+                    loop_start_time = datetime.datetime.now(datetime.timezone.utc)
+
                 start = datetime.datetime.now(datetime.timezone.utc)
 
                 name = self.steps[si]
                 func = getattr(self, name)
                 try:
                     self.loop_prev_out[name] = func(self.loop_prev_out)
-                    
+
+                    end = datetime.datetime.now(datetime.timezone.utc)
+                    duration = (end - start).total_seconds()
+
+                    # Log successful step
+                    log_step(end, li, si, name, duration, "success")
+
                     # TODO: Fix the error logger.exception(f"Skip loop {li} due to {e}")
                 except self.skip_loop_error as e:
                     logger.warning(f"Skip loop {li} due to {e}")
+
+                    end = datetime.datetime.now(datetime.timezone.utc)
+                    duration = (end - start).total_seconds()
+
+                    # Log skipped step
+                    log_step(end, li, si, name, duration, "skipped")
+
                     self.loop_idx += 1
                     self.step_idx = 0
+                    loop_start_time = None  # Reset loop timer (loop incomplete)
                     continue
                 except CoderError as e:
                     logger.warning(f"Traceback loop {li} due to {e}")
+
+                    end = datetime.datetime.now(datetime.timezone.utc)
+                    duration = (end - start).total_seconds()
+
+                    # Log error step
+                    log_step(end, li, si, name, duration, "error")
+
                     self.step_idx = 0
+                    loop_start_time = None  # Reset loop timer (loop restarting)
                     continue
 
                 end = datetime.datetime.now(datetime.timezone.utc)
@@ -133,16 +165,23 @@ class LoopBase:
                 # index increase and save session
                 self.step_idx = (self.step_idx + 1) % len(self.steps)
                 if self.step_idx == 0:  # reset to step 0 in next round
+                    # Log loop summary if we have a valid start time
+                    if loop_start_time is not None:
+                        loop_duration = (end - loop_start_time).total_seconds()
+                        log_loop_summary(end, li, loop_duration, len(self.steps))
+
                     self.loop_idx += 1
                     self.loop_prev_out = {}
                     pbar.reset()  # reset the progress bar for the next loop
-                self.dump(self.session_folder / f"{li}" / f"{si}_{name}")  # save a snapshot after the session
-                
+                    loop_start_time = None  # Reset for next loop
+                self.dump(
+                    self.session_folder / f"{li}" / f"{si}_{name}"
+                )  # save a snapshot after the session
+
                 if stop_event is not None and stop_event.is_set():
                     # break
                     raise Exception("Mining stopped by user")
-                    
-                
+
     def dump(self, path: str | Path):
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
