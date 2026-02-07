@@ -361,14 +361,14 @@ When you run `alphaagent mine`, the following pipeline executes iteratively:
    - Analyzes your initial direction and any previous feedback
    - Generates a detailed market hypothesis with theoretical grounding
    - Example: "Stocks with high trading volume relative to their 20-day average and positive price momentum tend to continue outperforming in the short term."
-   - Output: Hypothesis JSON saved to `log/<session>/0_r/`
+   - Output: Hypothesis pickle saved to `r/hypothesis generation/<pid>/`
 
 2. **Factor Construct** (Factor Agent):
    - Translates the hypothesis into 5-10 concrete factor expressions
    - Checks novelty against existing factors in knowledge base
    - Applies complexity regularization to avoid overfitting
    - Example expressions: `Rank($volume / Mean($volume, 20)) * Rank($close / Ref($close, 1) - 1)`
-   - Output: Factor expressions saved to `log/<session>/1_r/`
+   - Output: Factor experiment pickle saved to `r/experiment generation/<pid>/`
 
 3. **Factor Calculate** (Coder):
    - Parses factor expressions and validates syntax
@@ -381,7 +381,7 @@ When you run `alphaagent mine`, the following pipeline executes iteratively:
    - Trains LightGBM model on factor values
    - Simulates portfolio using TopkDropout strategy (buy top 50 stocks, rebalance daily)
    - Computes performance metrics: IC, ICIR, returns, Sharpe, max drawdown
-   - Output: Backtest results saved to `log/<session>/2_d/`
+   - Output: Backtest results pickle saved to `ef/runner result/<pid>/` with charts in `ef/Quantitative Backtesting Chart/<pid>/`
 
 5. **Feedback** (Eval Agent):
    - Analyzes backtest metrics against acceptance thresholds
@@ -389,7 +389,7 @@ When you run `alphaagent mine`, the following pipeline executes iteratively:
    - Generates detailed feedback explaining accept/reject decision
    - If accepted: adds factor to knowledge base
    - If rejected: provides guidance for next iteration
-   - Output: Feedback JSON saved to `log/<session>/3_ef/`
+   - Output: Feedback pickle saved to `ef/feedback/<pid>/` with detailed metrics in `ef/<pid>/common_logs.log`
 
 The loop repeats, with each iteration learning from previous feedback. Typical runs execute 5-20 iterations before timeout or manual stop (Ctrl+C).
 
@@ -436,7 +436,7 @@ If your session is interrupted or you want to continue from a previous run:
 ls log/
 
 # Resume from session directory
-alphaagent mine --path log/<timestamp>_<session_id>/
+alphaagent mine --path log/<timestamp>/
 ```
 
 AlphaAgent will load the previous state including:
@@ -458,54 +458,108 @@ After running AlphaAgent, your `log/` directory contains:
 
 ```
 log/
-└── <timestamp>_<session_id>/
-    ├── 0_r/              # Round 0: Idea Agent (hypothesis proposal)
-    │   ├── 0.json        # Hypothesis data
-    │   └── messages.jsonl
-    ├── 1_r/              # Round 1: Factor Agent (factor construction)
-    │   ├── 0.json        # Factor expressions
-    │   └── messages.jsonl
-    ├── 2_d/              # Round 2: Coder (factor calculation)
-    │   ├── workspace_0/  # Factor 0 workspace
-    │   ├── workspace_1/  # Factor 1 workspace
-    │   └── messages.jsonl
-    ├── 3_ef/             # Round 3: Runner + Eval (backtest + feedback)
-    │   ├── backtest_results.json
-    │   ├── feedback.json
-    │   └── messages.jsonl
-    ├── session.pkl       # Session state for resuming
-    └── trace.pkl         # Complete trace history
+└── <timestamp>/
+    ├── <pid>/                        # Process timing logs
+    │   └── common_logs.log           # Step durations (e.g., "factor_propose took 170s")
+    ├── __session__/                   # Session state snapshots (for resuming)
+    │   ├── 0/                         # Loop iteration 0
+    │   │   ├── 0_factor_propose       # State after hypothesis proposal (pickle)
+    │   │   ├── 1_factor_construct     # State after factor construction (pickle)
+    │   │   ├── 2_factor_calculate     # State after factor calculation (pickle)
+    │   │   ├── 3_factor_backtest      # State after backtesting (pickle)
+    │   │   └── 4_feedback             # State after feedback (pickle)
+    │   └── 1/                         # Loop iteration 1
+    │       └── ...
+    ├── init/                          # Component initialization states
+    │   ├── scenario/<pid>/            # QlibAlphaAgentScenario
+    │   ├── hypothesis generator/<pid>/
+    │   ├── experiment generation/<pid>/
+    │   ├── coder/<pid>/
+    │   ├── runner/<pid>/
+    │   └── summarizer/<pid>/
+    ├── r/                             # Research phase (Idea + Factor Agents)
+    │   ├── hypothesis generation/<pid>/  # Hypothesis pickle files
+    │   ├── experiment generation/<pid>/  # Factor expression pickle files
+    │   └── llm_messages/<pid>/          # Full LLM conversation logs
+    ├── d/                             # Development phase (CoSTEER coder)
+    │   ├── evolving code/<pid>/         # Code evolution iterations (pickle)
+    │   ├── evolving feedback/<pid>/     # Evaluation feedback per iteration (pickle)
+    │   ├── coder result/<pid>/          # Final coder output (pickle)
+    │   └── llm_messages/<pid>/          # Code review LLM conversations
+    ├── ef/                            # Evaluate & Feedback phase
+    │   ├── runner result/<pid>/         # Backtest results (pickle)
+    │   ├── Quantitative Backtesting Chart/<pid>/  # Plotly chart objects (pickle)
+    │   ├── feedback/<pid>/              # Eval Agent feedback (pickle)
+    │   └── <pid>/common_logs.log        # Detailed metrics (IC, ICIR, Sharpe, etc.)
+    └── llm_messages/                  # Top-level feedback LLM logs
+        └── <pid>/common_logs.log
 ```
 
-Each iteration creates a new set of `0_r/`, `1_r/`, `2_d/`, `3_ef/` directories.
+**Key Structure Details**:
+- `<pid>` is a process identifier that remains consistent across the entire session
+- Pickle files are named with timestamps: `YYYY-MM-DD_HH-MM-SS-microseconds.pkl`
+- Each phase directory contains a `common_logs.log` file with human-readable logs
+- `__session__/` stores cumulative snapshots for session resumption - each numbered directory (0, 1, 2...) represents one loop iteration with files for each pipeline step
+- Multiple iterations are stored in the same phase directories (r/, d/, ef/), differentiated by file timestamps
+- The `init/` directory captures the initialization state of all components when the session first starts
 
 ### 8.2 Agent Outputs
 
-**Idea Agent (`0_r/`)**:
-- `hypothesis`: Market hypothesis text with theoretical grounding
-- `direction`: Keywords summarizing the hypothesis
-- `experiment_plan`: Suggested approaches for factor construction
-- Output format: JSON with fields like `hypothesis`, `variables_to_use`, `reason`
+**Idea Agent (`r/hypothesis generation/<pid>/`)**:
+- Serialized hypothesis objects stored as `.pkl` files (one per iteration)
+- Each hypothesis pickle contains:
+  - `hypothesis`: Market hypothesis text with theoretical grounding
+  - `direction`: Keywords summarizing the hypothesis
+  - `experiment_plan`: Suggested approaches for factor construction
+  - `variables_to_use`: Recommended data fields (e.g., `["$close", "$volume"]`)
+  - `reason`: Justification for the hypothesis
+- Access these objects by unpickling them with Python's `pickle` module
 
-**Factor Agent (`1_r/`)**:
-- `sub_tasks`: List of factor tasks
-- For each task:
-  - `factor_name`: Descriptive name (e.g., "Volume_Momentum_Cross")
-  - `factor_description`: Explanation of the factor logic
-  - `factor_formulation`: DSL expression (e.g., `Rank($volume) * Rank($close - Ref($close, 5))`)
-  - `variables`: List of data fields used (e.g., `["$close", "$volume"]`)
+**Factor Agent (`r/experiment generation/<pid>/`)**:
+- Serialized factor experiment objects as `.pkl` files containing factor names, descriptions, and DSL expressions
+- Each factor experiment pickle includes:
+  - `sub_tasks`: List of factor tasks
+  - For each task:
+    - `factor_name`: Descriptive name (e.g., "Volume_Momentum_Cross")
+    - `factor_description`: Explanation of the factor logic
+    - `factor_formulation`: DSL expression (e.g., `Rank($volume) * Rank($close - Ref($close, 5))`)
+    - `variables`: List of data fields used
+- Timestamp-based filenames allow tracking factor evolution across iterations
 
-**Coder (`2_d/`)**:
-- `workspace_*/code.py`: Python implementation of factor
-- `workspace_*/execution_result.txt`: Execution logs
-- `workspace_*/factor_values.pkl`: Computed factor values (DataFrame)
-- `workspace_*/debugging_history.json`: Record of any syntax errors and fixes
+**Coder / CoSTEER (`d/`)**:
+- `d/evolving code/<pid>/`: Contains pickle files for each evolution iteration showing code refinement
+- `d/evolving feedback/<pid>/`: Has corresponding feedback for each evolution step
+- `d/coder result/<pid>/`: Contains the final validated result after all evolution iterations complete
+- Each pickle file includes:
+  - Python implementation of factor calculation
+  - Execution logs and error messages (if any)
+  - Computed factor values as pandas DataFrames
+  - Debugging history showing syntax errors and fixes
 
-**Runner + Eval Agent (`3_ef/`)**:
-- Backtest metrics: IC, ICIR, Rank IC, annual return, information ratio, max drawdown, Sharpe ratio
-- PnL curves: Cumulative returns over train/val/test periods
-- Feedback decision: `accept` or `reject` with detailed reasoning
-- Performance comparison vs benchmark (SPX for US market)
+**Runner + Eval Agent (`ef/`)**:
+- `ef/runner result/<pid>/`: Complete backtest results stored as pickle files
+  - Metrics: IC, ICIR, Rank IC, annual return, information ratio, max drawdown, Sharpe ratio
+  - Separate metrics for train/validation/test periods
+  - Performance comparison vs benchmark (SPX for US market)
+- `ef/Quantitative Backtesting Chart/<pid>/`: Serialized Plotly figure objects showing PnL curves
+  - Cumulative returns over train/val/test periods
+  - Visual comparison against benchmark returns
+- `ef/feedback/<pid>/`: Structured accept/reject feedback as pickle files
+  - Decision: `accept` or `reject` with detailed reasoning
+  - Specific issues identified (overfitting, low IC, etc.)
+  - Suggestions for improvement in next iteration
+
+**LLM Messages**:
+- Each phase directory contains `llm_messages/<pid>/common_logs.log` with full prompt/response transcripts
+- Shows the exact conversations between the system and LLM models
+- Useful for debugging prompt engineering and understanding agent reasoning
+- The top-level `llm_messages/` directory contains the Eval Agent's feedback conversation
+
+**Metrics Logs**:
+- Found in `ef/<pid>/common_logs.log` as human-readable text
+- Includes detailed breakdowns of IC, ICIR, Rank IC, Sharpe ratio, drawdown, returns
+- Also contains factor correlation analysis showing overlap with existing factors
+- Each iteration appends new metrics to this log file
 
 ### 8.3 Key Performance Metrics
 
@@ -797,7 +851,7 @@ rm -rf ./pickle_cache/*
 | Problem | Solution |
 |---------|----------|
 | `FactorEmptyError: Factor extraction failed` | This is handled gracefully; the loop continues to the next iteration. Check `log/` for details on which factors failed. |
-| Process killed after 3 hours | This is expected behavior (timeout). Increase `FACTOR_MINING_TIMEOUT` in `.env` or resume session: `alphaagent mine --path log/<session>/` |
+| Process killed after 3 hours | This is expected behavior (timeout). Increase `FACTOR_MINING_TIMEOUT` in `.env` or resume session: `alphaagent mine --path log/<timestamp>/` |
 | Out of memory error | Reduce `topk` in config (fewer stocks = less memory), or use a machine with more RAM |
 | Stale backtest results | Clear caches: `rm -rf ./pickle_cache/* ./git_ignore_folder/*` |
 | `signal.SIGALRM not found` (Windows) | Use WSL (Windows Subsystem for Linux) or a Linux/macOS machine |
