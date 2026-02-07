@@ -63,7 +63,7 @@ def extract_model_from_doc(doc_content: str) -> dict:
             else:
                 break
 
-    logger.info(f"已经完成{len(model_dict)}个模型的提取")
+    logger.info(f"Completed extraction of {len(model_dict)} models")
 
     return model_dict
 

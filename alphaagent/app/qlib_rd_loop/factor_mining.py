@@ -25,21 +25,21 @@ def force_timeout():
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            # 优先选择timeout参数
+            # Prioritize timeout parameter
             seconds = LLM_SETTINGS.factor_mining_timeout
             def handle_timeout(signum, frame):
-                logger.error(f"强制终止程序执行，已超过{seconds}秒")
+                logger.error(f"Forcing program termination, exceeded {seconds} seconds")
                 sys.exit(1)
 
-            # 设置信号处理器
+            # Set signal handler
             signal.signal(signal.SIGALRM, handle_timeout)
-            # 设置闹钟
+            # Set alarm
             signal.alarm(seconds)
 
             try:
                 result = func(*args, **kwargs)
             finally:
-                # 取消闹钟
+                # Cancel alarm
                 signal.alarm(0)
             return result
         return wrapper
@@ -49,13 +49,13 @@ def force_timeout():
 @force_timeout()
 def main(path=None, step_n=None, direction=None, stop_event=None):
     """
-    Autonomous alpha factor mining. 
+    Autonomous alpha factor mining.
 
     Args:
-        path: 会话路径
-        step_n: 步骤数
-        direction: 初始方向
-        stop_event: 停止事件
+        path: Session path
+        step_n: Number of steps
+        direction: Initial direction
+        stop_event: Stop event
 
     You can continue running session by
 
@@ -74,10 +74,10 @@ def main(path=None, step_n=None, direction=None, stop_event=None):
             model_loop = AlphaAgentLoop.load(path, use_local=use_local)
         model_loop.run(step_n=step_n, stop_event=stop_event)
     except Exception as e:
-        logger.error(f"执行过程中发生错误: {str(e)}")
+        logger.error(f"An error occurred during execution: {str(e)}")
         raise
     finally:
-        logger.info("程序执行完成或被终止")
+        logger.info("Program execution completed or terminated")
 
 if __name__ == "__main__":
     fire.Fire(main)

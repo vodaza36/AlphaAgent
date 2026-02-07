@@ -116,22 +116,22 @@ class LocalEnv(Env[LocalConf]):
 
 
 class QlibLocalEnv(LocalEnv):
-    """本地运行Qlib环境，替代Docker容器"""
-    
+    """Local Qlib environment, replacing Docker container"""
+
     def __init__(self):
         conf = LocalConf(
             py_bin="python",
             default_entry="qrun conf.yaml"
         )
         super().__init__(conf)
-    
+
     def prepare(self):
-        """确保本地环境已准备就绪"""
+        """Ensure local environment is ready"""
         logger.info("Use local environment to run Qlib backtest")
-        # 确保Qlib数据目录存在
+        # Ensure Qlib data directory exists
         qlib_data_path = Path("~/.qlib/qlib_data/cn_data").expanduser()
         if not qlib_data_path.exists():
-            logger.warning(f"Qlib数据目录不存在: {qlib_data_path}，请确保已下载数据")
+            logger.warning(f"Qlib data directory does not exist: {qlib_data_path}, please ensure data is downloaded")
         
     def run(
         self, 
@@ -164,28 +164,28 @@ class QlibLocalEnv(LocalEnv):
         if local_path:
             cwd = Path(local_path).resolve()
             
-        print(Rule("[bold green]开始本地执行[/bold green]", style="dark_orange"))
-        
-        # 运行命令
+        print(Rule("[bold green]Starting local execution[/bold green]", style="dark_orange"))
+
+        # Run command
         result = subprocess.run(
-            command, 
-            cwd=cwd, 
-            env={**os.environ, **env}, 
-            capture_output=True, 
+            command,
+            cwd=cwd,
+            env={**os.environ, **env},
+            capture_output=True,
             text=True
         )
-        
-        # 输出结果
+
+        # Output results
         output = result.stdout
         print(output)
-        
+
         if result.stderr:
-            print(f"[bold red]错误输出:[/bold red] {result.stderr}")
-            
-        print(Rule("[bold green]本地执行结束[/bold green]", style="dark_orange"))
-        
+            print(f"[bold red]Error output:[/bold red] {result.stderr}")
+
+        print(Rule("[bold green]Local execution completed[/bold green]", style="dark_orange"))
+
         if result.returncode != 0:
-            logger.error(f"命令执行失败: {result.stderr}")
+            logger.error(f"Command execution failed: {result.stderr}")
             
         return output
 
@@ -470,7 +470,7 @@ class DockerEnv(Env[DockerConf]):
 
 
 class QTDockerEnv(DockerEnv):
-    """Qlib运行环境，可选择Docker或本地环境"""
+    """Qlib runtime environment, choose between Docker or local environment"""
 
     def __init__(self, conf: DockerConf = QlibDockerConf(), is_local=False):
         self.is_local = is_local
@@ -480,12 +480,12 @@ class QTDockerEnv(DockerEnv):
             self.env = DockerEnv(conf)
 
     def prepare(self):
-        """准备环境"""
+        """Prepare environment"""
         self.env.prepare()
 
     def run(self, local_path=None, entry=None, env=None, running_extra_volume=None):
-        """运行命令"""
-        return self.env.run(entry=entry, local_path=local_path, env=env, 
+        """Run command"""
+        return self.env.run(entry=entry, local_path=local_path, env=env,
                           running_extra_volume=running_extra_volume if not self.is_local else None)
 
 
