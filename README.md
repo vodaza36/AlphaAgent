@@ -120,11 +120,11 @@ This repository follows the implementation of [RD-Agent](https://github.com/micr
   ```
 
 
-- If you need to rerun the baseline results or update backtest configs, remove the cache folders:
+- If you need to clear all research results and knowledge base data:
   ```sh
-  rm -r ./pickle_cache/*
-  rm -r ./git_ignore_folder/*
+  alphaagent clear
   ```
+  **⚠️ WARNING**: Do NOT run this command while an AlphaAgent mining process is running, as it will delete active workspaces and cause the process to fail.
 
 ### 🖥️ Monitor the Application Results
 - You can run the following command for our demo program to see the run logs. Note than the entrance is deprecated. 

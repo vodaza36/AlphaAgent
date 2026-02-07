@@ -83,12 +83,20 @@ alphaagent backtest --factor_path "<PATH_TO_CSV_FILE>"
 alphaagent ui --port 19899 --log_dir log/
 ```
 
-### Clear Cache
-When updating backtest configurations or rerunning baseline results:
+### Clear Research Results
+Clear all research artifacts and knowledge base data:
 ```bash
-rm -r ./pickle_cache/*
-rm -r ./git_ignore_folder/*
+alphaagent clear
 ```
+
+This removes:
+- `log/` - All session logs and backtest visualizations
+- `pickle_cache/` - Cached backtest results
+- `git_ignore_folder/` - Experiment workspaces and MLflow data
+- `graph.pkl` - CoSTEER knowledge graph
+- `prompt_cache.db` - LLM embedding cache
+
+**⚠️ WARNING**: Do NOT run `alphaagent clear` while an AlphaAgent mining process is running. This will delete active workspaces and cause the running process to fail. Always stop active mining sessions before clearing.
 
 ### Development Tools
 ```bash

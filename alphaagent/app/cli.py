@@ -20,6 +20,7 @@ from alphaagent.app.qlib_rd_loop.factor_mining import main as mine
 from alphaagent.app.qlib_rd_loop.factor_backtest import main as backtest
 from alphaagent.app.utils.health_check import health_check
 from alphaagent.app.utils.info import collect_info
+from alphaagent.app.utils.clear import clear
 
 
 def ui(port=19899, log_dir="./log", debug=False):
@@ -45,5 +46,6 @@ def app():
             "ui": ui,
             "health_check": health_check,
             "collect_info": collect_info,
+            "clear": clear,
         }
     )
