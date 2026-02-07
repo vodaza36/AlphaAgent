@@ -112,6 +112,31 @@ make test-offline      # Run tests without API calls
 make build             # Build distribution package
 ```
 
+## Commit Message Conventions
+
+All commit messages MUST follow the Conventional Commits format with a type prefix:
+
+- **feat**: New feature or functionality
+- **fix**: Bug fix
+- **docs**: Documentation changes only
+- **refactor**: Code refactoring without changing functionality
+- **test**: Adding or updating tests
+- **chore**: Maintenance tasks, dependency updates, build changes
+- **perf**: Performance improvements
+- **style**: Code formatting changes (whitespace, semicolons, etc.)
+
+**Format**: `<type>: <description>`
+
+**Examples**:
+```
+feat: Add support for US stock market data
+fix: Resolve factor expression parsing error
+docs: Update data preparation instructions
+refactor: Simplify AlphaAgent loop logic
+test: Add unit tests for factor evaluators
+chore: Update dependencies to latest versions
+```
+
 ## Architecture
 
 ### Core Framework (alphaagent/core/)
