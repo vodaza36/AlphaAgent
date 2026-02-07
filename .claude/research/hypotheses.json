@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "hypotheses": [
+    {
+      "id": "h_20260207_001",
+      "hypothesis": "Recent research on order flow imbalance demonstrates mean-reverting Ornstein-Uhlenbeck dynamics with extreme kurtosis and persistent autocorrelation decay in equity markets (arXiv:2505.17388, 2025). This occurs because order flow imbalances create temporary price dislocations that systematically revert as liquidity providers absorb inventory shocks. Combining volume-price correlation patterns with cross-sectional commonality (as shown in arXiv:2505.08180 with R² improvements of 2.4x) can identify stocks where order flow mean-reversion is strongest, particularly when volume spikes coincide with extreme price-volume decorrelation periods indicating liquidity stress.",
+      "direction_string": "Stocks with high volume-price decorrelation combined with recent volume spikes exhibit predictable mean-reversion as order flow imbalances systematically unwind when cross-sectional liquidity commonality returns to equilibrium.",
+      "source_urls": [
+        "https://arxiv.org/abs/2505.17388",
+        "https://arxiv.org/abs/2505.08180",
+        "https://arxiv.org/abs/2408.03594"
+      ],
+      "source_titles": [
+        "Stochastic Price Dynamics in Response to Order Flow Imbalance: Evidence from CSI 300 Index Futures",
+        "Forecasting Intraday Volume in Equity Markets with Machine Learning",
+        "Forecasting High Frequency Order Flow Imbalance using Hawkes Processes"
+      ],
+      "research_theme": "order-flow-volume-reversal",
+      "suggested_factors": [
+        "REGRESI($close, $volume, 20)",
+        "RANK(TS_STD($volume, 10) / TS_MEAN($volume, 60))",
+        "TS_CORR($close, $volume, 20) - MEAN(TS_CORR($close, $volume, 20))"
+      ],
+      "status": "unused",
+      "created_at": "2026-02-07T10:30:00Z"
+    }
+  ]
+}

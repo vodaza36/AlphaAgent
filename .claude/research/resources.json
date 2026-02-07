@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "resources": [
+    {
+      "url": "https://arxiv.org/abs/2408.03594",
+      "title": "Forecasting High Frequency Order Flow Imbalance using Hawkes Processes",
+      "source_type": "arxiv",
+      "extraction_count": 1,
+      "max_extractions": 3,
+      "themes_extracted": ["order-flow-volume-reversal"],
+      "first_seen": "2026-02-07T10:30:00Z",
+      "last_accessed": "2026-02-07T10:30:00Z"
+    },
+    {
+      "url": "https://arxiv.org/abs/2505.17388",
+      "title": "Stochastic Price Dynamics in Response to Order Flow Imbalance: Evidence from CSI 300 Index Futures",
+      "source_type": "arxiv",
+      "extraction_count": 1,
+      "max_extractions": 3,
+      "themes_extracted": ["order-flow-volume-reversal"],
+      "first_seen": "2026-02-07T10:30:00Z",
+      "last_accessed": "2026-02-07T10:30:00Z"
+    },
+    {
+      "url": "https://arxiv.org/abs/2511.08571",
+      "title": "Forecast-to-Fill: Benchmark-Neutral Alpha and Billion-Dollar Capacity in Gold Futures (2015–2025)",
+      "source_type": "arxiv",
+      "extraction_count": 1,
+      "max_extractions": 3,
+      "themes_extracted": ["order-flow-volume-reversal"],
+      "first_seen": "2026-02-07T10:30:00Z",
+      "last_accessed": "2026-02-07T10:30:00Z"
+    },
+    {
+      "url": "https://arxiv.org/abs/2505.08180",
+      "title": "Forecasting Intraday Volume in Equity Markets with Machine Learning",
+      "source_type": "arxiv",
+      "extraction_count": 1,
+      "max_extractions": 3,
+      "themes_extracted": ["order-flow-volume-reversal"],
+      "first_seen": "2026-02-07T10:30:00Z",
+      "last_accessed": "2026-02-07T10:30:00Z"
+    }
+  ]
+}

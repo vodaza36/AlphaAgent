@@ -161,8 +161,6 @@ saved_mlruns/
 # DB files
 *.db
 
-# Claude research state files
-.claude/research/
 
 # Docker
 factor_template/mlruns/
