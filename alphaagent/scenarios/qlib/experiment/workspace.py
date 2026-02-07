@@ -42,8 +42,15 @@ class QlibFBWorkspace(FBWorkspace):
         )
 
         # 加载结果
-        ret_df = pd.read_pickle(self.workspace_path / "ret.pkl")
-        logger.log_object(ret_df, tag="Quantitative Backtesting Chart")
+        try:
+            ret_df = pd.read_pickle(self.workspace_path / "ret.pkl")
+            logger.log_object(ret_df, tag="Quantitative Backtesting Chart")
+        except FileNotFoundError:
+            logger.error(f"File ret.pkl does not exist. Backtest may have failed.")
+            return None
+        except Exception as e:
+            logger.error(f"Failed to load ret.pkl: {e}")
+            return None
 
         csv_path = self.workspace_path / "qlib_res.csv"
         if not csv_path.exists():

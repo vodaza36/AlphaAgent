@@ -1,12 +1,24 @@
 import pickle
+import sys
 from pathlib import Path
 
 import pandas as pd
 import qlib
 from mlflow.entities import ViewType
 from mlflow.tracking import MlflowClient
+from ruamel.yaml import YAML
 
-qlib.init()
+# Read qlib_init config from the config file
+config_path = Path(__file__).resolve().parent / "conf.yaml"
+if config_path.exists():
+    yaml = YAML(typ="safe", pure=True)
+    with open(config_path, "r") as fp:
+        config = yaml.load(fp)
+    qlib_init_config = config.get("qlib_init", {})
+    qlib.init(**qlib_init_config)
+else:
+    # Fallback to default init if config not found
+    qlib.init()
 
 from qlib.workflow import R
 
@@ -33,6 +45,7 @@ for experiment in experiments:
 # Check if the latest recorder is found
 if latest_recorder is None:
     print("No recorders found")
+    sys.exit(1)
 else:
     print(f"Latest recorder: {latest_recorder}")
 
@@ -44,5 +57,10 @@ else:
 
     print(f"Output has been saved to {output_path}")
 
-    ret_data_frame = latest_recorder.load_object("portfolio_analysis/report_normal_1day.pkl")
-    ret_data_frame.to_pickle("ret.pkl")
+    try:
+        ret_data_frame = latest_recorder.load_object("portfolio_analysis/report_normal_1day.pkl")
+        ret_data_frame.to_pickle("ret.pkl")
+    except Exception as e:
+        print(f"Error: Failed to load portfolio_analysis/report_normal_1day.pkl: {e}")
+        print("PortAnaRecord may have failed during backtest execution.")
+        sys.exit(1)
