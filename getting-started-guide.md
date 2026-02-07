@@ -450,6 +450,88 @@ Continue running with `--step_n` to limit additional iterations:
 alphaagent mine --path log/20250207_123456/ --step_n 5
 ```
 
+### 7.5 Understanding Iterations and Stopping Conditions
+
+**The mining process runs indefinitely by default** - there is no fixed maximum number of iterations. The workflow continues generating and testing new factors until explicitly stopped.
+
+#### Iteration Structure
+
+Each iteration consists of 5 sequential steps:
+1. **factor_propose** - Idea Agent generates market hypothesis (~2-5 minutes)
+2. **factor_construct** - Factor Agent creates factor expressions (~3-8 minutes)
+3. **factor_calculate** - Calculates factor values (~1-3 minutes)
+4. **factor_backtest** - Runs backtesting (~5-15 minutes)
+5. **feedback** - Eval Agent validates and provides feedback (~1-3 minutes)
+
+A complete iteration typically takes **12-30 minutes** depending on:
+- LLM API response times
+- Number of factors generated per iteration
+- Size of the stock universe
+- Model complexity (LightGBM training time)
+
+#### When Mining Stops
+
+The process stops when any of these conditions are met:
+
+**1. Timeout (Default: 10 hours)**
+- Configured in `.env` as `FACTOR_MINING_TIMEOUT=36000` (seconds)
+- Prevents runaway processes and controls API costs
+- Adjust for longer/shorter runs: `FACTOR_MINING_TIMEOUT=21600` (6 hours)
+
+**2. Manual Termination**
+- Press `Ctrl+C` to interrupt gracefully
+- Session state is saved after each step for resumption
+- Safe to interrupt at any point
+
+**3. Step Limit (Optional)**
+- Use `--step_n N` parameter to run exactly N steps
+- Example: `alphaagent mine --direction "..." --step_n 20` runs 20 steps then stops
+- Useful for controlled experiments or testing
+
+**4. Fatal Errors**
+- Non-recoverable exceptions terminate the process
+- Note: `FactorEmptyError` (no valid factors generated) is handled gracefully - the loop skips that iteration and continues
+
+#### Controlling Execution
+
+**Run for specific duration**:
+```bash
+# 3 hours maximum
+FACTOR_MINING_TIMEOUT=10800 alphaagent mine --potential_direction "your hypothesis"
+```
+
+**Run for specific iterations**:
+```bash
+# Run exactly 10 iterations (50 steps: 5 steps × 10 iterations)
+alphaagent mine --potential_direction "your hypothesis" --step_n 50
+```
+
+**Resume and extend**:
+```bash
+# Resume previous session and run 5 more iterations (25 steps)
+alphaagent mine --path log/20250207_123456/ --step_n 25
+```
+
+#### Monitoring Progress
+
+Track iteration progress in real-time:
+```bash
+# Watch the log file
+tail -f log/<timestamp>/<pid>/common_logs.log
+
+# Or use the UI
+alphaagent ui --port 19899 --log_dir log/
+```
+
+#### Expected Results
+
+Based on typical runs:
+- **First 3-5 iterations**: Initial exploration, higher rejection rate
+- **Iterations 5-10**: Refined hypotheses, increasing acceptance rate
+- **Iterations 10+**: Diminishing returns, most novel factors already discovered
+
+**Recommendation**: Start with `--step_n 25` (5 iterations) to evaluate whether your hypothesis direction is productive, then extend if promising.
+
 ## Understanding the Output
 
 ### 8.1 Log Directory Structure
