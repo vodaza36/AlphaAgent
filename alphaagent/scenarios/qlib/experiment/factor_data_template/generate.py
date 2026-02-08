@@ -1,9 +1,11 @@
+import os
 import qlib
 from qlib.data import D
 
 if __name__ == '__main__':
-    #qlib.init(provider_uri="~/.qlib/qlib_data/cn_data")
-    qlib.init(provider_uri="~/.qlib/qlib_data/us_data")
+    # Use environment variable for data path (defaults to ~/.qlib/qlib_data/us_data for backwards compatibility)
+    provider_uri = os.environ.get("QLIB_DATA_URI", "~/.qlib/qlib_data/us_data")
+    qlib.init(provider_uri=provider_uri)
 
     instruments = D.instruments()
     fields = ["$open", "$close", "$high", "$low", "$volume"]  # , "$amount", "$turn", "$pettm", "$pbmrq"

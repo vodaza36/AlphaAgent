@@ -21,6 +21,7 @@ from alphaagent.app.qlib_rd_loop.factor_backtest import main as backtest
 from alphaagent.app.utils.health_check import health_check
 from alphaagent.app.utils.info import collect_info
 from alphaagent.app.utils.clear import clear
+from alphaagent.app.utils.data import init, data_refresh
 
 
 def ui(port=19899, log_dir="./log", debug=False):
@@ -41,6 +42,8 @@ def ui(port=19899, log_dir="./log", debug=False):
 def app():
     fire.Fire(
         {
+            "init": init,
+            "data-refresh": data_refresh,
             "mine": mine,
             "backtest": backtest,
             "ui": ui,

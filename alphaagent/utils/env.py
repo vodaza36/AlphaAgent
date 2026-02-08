@@ -127,11 +127,13 @@ class QlibLocalEnv(LocalEnv):
 
     def prepare(self):
         """Ensure local environment is ready"""
+        from alphaagent.app.utils.data import is_data_initialized
         logger.info("Use local environment to run Qlib backtest")
-        # Ensure Qlib data directory exists
-        qlib_data_path = Path("~/.qlib/qlib_data/cn_data").expanduser()
-        if not qlib_data_path.exists():
-            logger.warning(f"Qlib data directory does not exist: {qlib_data_path}, please ensure data is downloaded")
+        # Check if data is initialized
+        if not is_data_initialized():
+            logger.error("Qlib data not initialized!")
+            logger.error("Please run: alphaagent init")
+            raise RuntimeError("Qlib data not initialized")
         
     def run(
         self, 
@@ -222,9 +224,18 @@ class QlibDockerConf(DockerConf):
     image: str = "local_qlib:latest"
     mount_path: str = "/workspace/qlib_workspace/"
     default_entry: str = "qrun conf.yaml"
-    extra_volumes: dict = {Path("~/.qlib/").expanduser().resolve(): "/root/.qlib/"}
+    extra_volumes: dict = {}  # Will be set in model_post_init
     shm_size: str | None = "16g"
     enable_gpu: bool = True
+
+    def model_post_init(self, __context):
+        """Set up extra_volumes with the actual data directory path"""
+        from alphaagent.app.utils.data import get_data_dir
+        data_dir = get_data_dir()
+        # Mount .data/us_data/ to /root/.qlib/qlib_data/us_data/ in container
+        self.extra_volumes = {
+            str(data_dir): "/root/.qlib/qlib_data/us_data/"
+        }
 
 
 class DMDockerConf(DockerConf):

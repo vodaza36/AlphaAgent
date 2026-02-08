@@ -87,5 +87,8 @@ class RDAgentSettings(ExtendedBaseSettings):
         # executing the function multiple times
     )
 
+    # qlib data conf
+    qlib_data_uri: str = str(Path.cwd() / ".data" / "us_data")
+
 
 RD_AGENT_SETTINGS = RDAgentSettings()

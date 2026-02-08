@@ -18,11 +18,16 @@ def generate_data_folder_from_qlib(use_local: bool = True):
     qtde = QTDockerEnv(is_local=use_local)
     qtde.prepare()
 
+    # Pass QLIB_DATA_URI as environment variable
+    from alphaagent.app.utils.data import get_data_dir
+    env = {"QLIB_DATA_URI": str(get_data_dir())}
+
     # Run data generation script
     logger.info(f"Generating factor data in {'local environment' if use_local else 'Docker container'}")
     execute_log = qtde.run(
         local_path=str(template_path),
         entry=f"python generate.py",
+        env=env,
     )
 
     # Check if files are generated

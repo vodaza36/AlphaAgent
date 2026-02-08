@@ -12,6 +12,7 @@ import time
 import ctypes
 import os
 from alphaagent.app.qlib_rd_loop.conf import ALPHA_AGENT_FACTOR_PROP_SETTING
+from alphaagent.app.utils.data import is_data_initialized
 from alphaagent.components.workflow.alphaagent_loop import AlphaAgentLoop
 from alphaagent.core.exception import FactorEmptyError
 from alphaagent.log import logger
@@ -64,6 +65,13 @@ def main(path=None, step_n=None, direction=None, stop_event=None):
         dotenv run -- python rdagent/app/qlib_rd_loop/factor_alphaagent.py $LOG_PATH/__session__/1/0_propose  --step_n 1  --potential_direction "[Initial Direction (Optional)]"  # `step_n` is a optional paramter
 
     """
+    # Check if data is initialized
+    if not is_data_initialized():
+        logger.error("Qlib data not initialized!")
+        logger.error("Please run: alphaagent init")
+        logger.error("This will extract the bundled market data (~2 minutes)")
+        sys.exit(1)
+
     try:
         use_local = os.getenv("USE_LOCAL", "True").lower()
         use_local = True if use_local in ["true", "1"] else False

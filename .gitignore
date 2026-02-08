@@ -5,6 +5,15 @@ Pipfile
 public
 release-notes.md
 
+# Extracted market data (created by `alphaagent init`)
+.data/
+
+# Data preparation temp files
+temp_us_data*/
+temp_cn_data*/
+*_build.log
+perf.log
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 */__pycache__/*

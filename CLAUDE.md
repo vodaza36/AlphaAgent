@@ -22,54 +22,31 @@ uv pip install -e .
 
 ### Data Preparation
 
-#### Chinese Stock Data (CN Market)
-The project requires Chinese stock data via Qlib:
+AlphaAgent includes a bundled **survivorship-bias-free S&P 500 dataset** (2020-2026, ~600 symbols including delisted stocks). The data is stored in `data/us_data.zip` and needs to be extracted before first use.
+
+**First-time setup:**
 ```bash
-# Clone and install Qlib
-git clone https://github.com/microsoft/qlib.git
-cd qlib
-uv pip install .
-cd ..
-
-# Download stock data from baostock
-python prepare_cn_data.py
-
-# Convert data to Qlib format
-cd qlib
-python scripts/dump_bin.py dump_all \
-  --include_fields open,high,low,close,preclose,volume,amount,turn,factor \
-  --csv_path ~/.qlib/qlib_data/cn_data/raw_data_now \
-  --qlib_dir ~/.qlib/qlib_data/cn_data \
-  --date_field_name date \
-  --symbol_field_name code
-
-# Collect calendar data
-python scripts/data_collector/future_calendar_collector.py --qlib_dir ~/.qlib/qlib_data/cn_data/ --region cn
-
-# Download stock universe (CSI500/CSI300/CSI100)
-python scripts/data_collector/cn_index/collector.py --index_name CSI500 --qlib_dir ~/.qlib/qlib_data/cn_data/ --method parse_instruments
+# Extract bundled market data (~2 minutes)
+alphaagent init
 ```
 
-#### US Stock Data (S&P 500) - Survivorship-Bias-Free
-For US market backtesting with Alpha158 support:
+This extracts the data to `.data/us_data/` in Qlib binary format, ready for backtesting.
+
+**Refresh data (optional):**
 ```bash
-# Download survivorship-bias-free S&P 500 dataset (2020-2026)
-# Includes VWAP field and properly tracks delistings
-python prepare_us_data_v2.py
-
-# Verify dataset
-python test_alpha158_vwap.py
-
-# Quick reference guide
-cat QUICK_START_US_DATA_V2.md
+# Download latest S&P 500 data and rebuild dataset (~30-45 minutes)
+alphaagent data-refresh
 ```
 
-**Key improvements over basic US data:**
-- ✅ No survivorship bias: includes ~100+ stocks that left S&P 500 during 2020-2026
-- ✅ VWAP field available: enables full Alpha158 feature set
-- ✅ Proper delisting dates: instruments file tracks actual removal dates
+This downloads fresh data from Yahoo Finance, computes VWAP, converts to Qlib format, and updates `data/us_data.zip`.
 
-See `SURVIVORSHIP_BIAS_FREE_DATASET.md` for full documentation.
+**Key features:**
+- ✅ No survivorship bias: includes ~100+ delisted stocks
+- ✅ VWAP field: enables full Alpha158 feature set
+- ✅ Proper delisting dates: instruments file tracks exact removal dates
+- ✅ Self-contained: data bundled in repo, no manual download needed
+
+See `DATA.md` for detailed documentation on data structure, sources, and troubleshooting.
 
 ### Configuration
 Copy `.env.example` to `.env` and configure:
@@ -77,8 +54,24 @@ Copy `.env.example` to `.env` and configure:
 - `REASONING_MODEL`: Slow-thinking model for Idea and Factor agents (e.g., o3-mini, deepseek-reasoner)
 - `CHAT_MODEL`: Model for debugging and feedback (e.g., deepseek-v3)
 - `USE_LOCAL=True`: Run backtesting locally instead of Docker
+- `QLIB_DATA_URI` (optional): Custom data path (default: `.data/us_data`)
 
 ## Common Commands
+
+### Initialize Data (First Time)
+```bash
+# Extract bundled market data
+alphaagent init
+
+# Force re-extraction (overwrites existing data)
+alphaagent init --force
+```
+
+### Refresh Data (Optional)
+```bash
+# Download latest S&P 500 data and rebuild dataset
+alphaagent data-refresh
+```
 
 ### Run AlphaAgent
 ```bash

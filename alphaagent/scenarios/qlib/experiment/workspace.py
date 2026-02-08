@@ -14,17 +14,28 @@ class QlibFBWorkspace(FBWorkspace):
         self.inject_code_from_folder(template_folder_path)
 
     def execute(
-        self, 
-        qlib_config_name: str = "conf.yaml", 
-        run_env: dict = {}, 
-        use_local: bool = True, 
-        *args, 
+        self,
+        qlib_config_name: str = "conf.yaml",
+        run_env: dict = {},
+        use_local: bool = True,
+        *args,
         **kwargs
     ) -> str:
+        # Replace hardcoded data paths in YAML files with actual data directory
+        if use_local:
+            from alphaagent.app.utils.data import get_data_dir
+            data_uri = str(get_data_dir())
+            for yaml_file in self.workspace_path.glob("*.yaml"):
+                content = yaml_file.read_text()
+                updated = content.replace("~/.qlib/qlib_data/us_data", data_uri)
+                if updated != content:
+                    yaml_file.write_text(updated)
+                    logger.debug(f"Updated data path in {yaml_file.name}")
+
         # 使用本地环境或Docker环境
         qtde = QTDockerEnv(is_local=use_local)
         qtde.prepare()
-        
+
         # 运行Qlib回测
         logger.info(f"Execute {'Local' if use_local else 'Docker container'} Backtest: qrun {qlib_config_name}")
         execute_log = qtde.run(
