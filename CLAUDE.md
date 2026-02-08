@@ -21,6 +21,8 @@ uv pip install -e .
 ```
 
 ### Data Preparation
+
+#### Chinese Stock Data (CN Market)
 The project requires Chinese stock data via Qlib:
 ```bash
 # Clone and install Qlib
@@ -47,6 +49,27 @@ python scripts/data_collector/future_calendar_collector.py --qlib_dir ~/.qlib/ql
 # Download stock universe (CSI500/CSI300/CSI100)
 python scripts/data_collector/cn_index/collector.py --index_name CSI500 --qlib_dir ~/.qlib/qlib_data/cn_data/ --method parse_instruments
 ```
+
+#### US Stock Data (S&P 500) - Survivorship-Bias-Free
+For US market backtesting with Alpha158 support:
+```bash
+# Download survivorship-bias-free S&P 500 dataset (2020-2026)
+# Includes VWAP field and properly tracks delistings
+python prepare_us_data_v2.py
+
+# Verify dataset
+python test_alpha158_vwap.py
+
+# Quick reference guide
+cat QUICK_START_US_DATA_V2.md
+```
+
+**Key improvements over basic US data:**
+- ✅ No survivorship bias: includes ~100+ stocks that left S&P 500 during 2020-2026
+- ✅ VWAP field available: enables full Alpha158 feature set
+- ✅ Proper delisting dates: instruments file tracks actual removal dates
+
+See `SURVIVORSHIP_BIAS_FREE_DATASET.md` for full documentation.
 
 ### Configuration
 Copy `.env.example` to `.env` and configure:
