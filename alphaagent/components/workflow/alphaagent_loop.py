@@ -38,6 +38,7 @@ from alphaagent.log import logger
 from functools import wraps
 
 # Define decorator: check stop_event before function call
+STOP_EVENT = None
 
 
 def stop_event_check(func):
@@ -85,11 +86,16 @@ class AlphaAgentLoop(LoopBase, metaclass=LoopMeta):
             super().__init__()
 
     @classmethod
-    def load(cls, path, use_local: bool = True):
+    def load(cls, path, use_local: bool = True, stop_event: threading.Event = None):
         """Load existing session"""
         instance = super().load(path)
         instance.use_local = use_local
         logger.info(f"Loading AlphaAgentLoop, using {'local environment' if use_local else 'Docker container'} for backtesting")
+
+        # Set global stop event for decorator
+        global STOP_EVENT
+        STOP_EVENT = stop_event
+
         return instance
 
     @measure_time

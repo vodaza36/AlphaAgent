@@ -21,6 +21,15 @@ DIRNAME = Path(__file__).absolute().resolve().parent
 
 
 def process_results(current_result, sota_result):
+    # Handle None or empty results
+    if current_result is None or (isinstance(current_result, pd.Series) and current_result.empty):
+        logger.error("Current result is None or empty. Backtest may have failed.")
+        return "Error: Current backtest failed to produce results. Please check the logs for errors."
+
+    if sota_result is None or (isinstance(sota_result, pd.Series) and sota_result.empty):
+        logger.error("SOTA result is None or empty. Previous backtest may have failed.")
+        return "Error: SOTA backtest failed to produce results. Please check the logs for errors."
+
     # Convert the results to dataframes
     current_df = pd.DataFrame(current_result)
     sota_df = pd.DataFrame(sota_result)
@@ -36,22 +45,50 @@ def process_results(current_result, sota_result):
     # Combine the dataframes on the Metric index
     combined_df = pd.concat([current_df, sota_df], axis=1)
 
-    # Select important metrics for comparison
-    important_metrics = [
+    # Define preferred metrics in order of priority
+    # Portfolio metrics (if PortAnaRecord succeeded)
+    portfolio_metrics = [
         "1day.excess_return_without_cost.max_drawdown",
         "1day.excess_return_without_cost.information_ratio",
         "1day.excess_return_without_cost.annualized_return",
         "IC",
     ]
 
+    # Fallback to signal metrics (if only SigAnaRecord succeeded)
+    signal_metrics = [
+        "IC",
+        "Rank IC",
+        "ICIR",
+        "Rank ICIR",
+    ]
+
+    # Check which metrics are available and select accordingly
+    available_metrics = set(combined_df.index)
+
+    if any(metric in available_metrics for metric in portfolio_metrics):
+        # Use portfolio metrics if available
+        important_metrics = [m for m in portfolio_metrics if m in available_metrics]
+    else:
+        # Fallback to signal metrics
+        important_metrics = [m for m in signal_metrics if m in available_metrics]
+
+    if not important_metrics:
+        # If no known metrics, use all available metrics
+        logger.warning(f"No expected metrics found. Available metrics: {list(available_metrics)}")
+        important_metrics = list(available_metrics)
+        if not important_metrics:
+            return "Error: No metrics available from backtest results."
+
     # Filter the combined DataFrame to retain only the important metrics
     filtered_combined_df = combined_df.loc[important_metrics]
 
-    filtered_combined_df[
-        "Bigger columns name (Didn't consider the direction of the metric, you should judge it by yourself that bigger is better or smaller is better)"
-    ] = filtered_combined_df.apply(
-        lambda row: "Current Result" if row["Current Result"] > row["SOTA Result"] else "SOTA Result", axis=1
-    )
+    # Only add comparison column if we have data
+    if not filtered_combined_df.empty and len(filtered_combined_df.columns) >= 2:
+        filtered_combined_df[
+            "Bigger columns name (Didn't consider the direction of the metric, you should judge it by yourself that bigger is better or smaller is better)"
+        ] = filtered_combined_df.apply(
+            lambda row: "Current Result" if row["Current Result"] > row["SOTA Result"] else "SOTA Result", axis=1
+        )
 
     return filtered_combined_df.to_string()
 

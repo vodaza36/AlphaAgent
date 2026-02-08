@@ -155,6 +155,16 @@ class AgentLog(SingletonBaseClass):
         logger.patch(lambda r: r.update(caller_info)).warning(msg)
         logger.remove(file_handler_id)
 
+    def debug(self, msg: str, *, tag: str = "") -> None:
+        caller_info = get_caller_info()
+
+        tag = f"{self._tag}.{tag}.{self.get_pids()}".strip(".")
+        file_handler_id = logger.add(
+            self.log_trace_path / tag.replace(".", "/") / "common_logs.log", format=self.file_format
+        )
+        logger.patch(lambda r: r.update(caller_info)).debug(msg)
+        logger.remove(file_handler_id)
+
     def error(self, msg: str, *, tag: str = "") -> None:
         caller_info = get_caller_info()
 

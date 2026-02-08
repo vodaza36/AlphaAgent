@@ -14,7 +14,7 @@ benchmark: &benchmark ^gspc
 
 data_handler_config: &data_handler_config
     start_time: 2015-01-02
-    end_time: 2026-02-07  # US data updated to 2026-02-07
+    end_time: 2026-02-06  # US data updated to 2026-02-06
     instruments: *market
     data_loader:
         class: qlib.contrib.data.loader.QlibDataLoader
@@ -66,7 +66,7 @@ port_analysis_config: &port_analysis_config
             n_drop: 5
     backtest:
         start_time: 2025-01-01
-        end_time: 2026-02-07
+        end_time: 2026-02-04  # End 2 days earlier to avoid IndexError with Ref($close, -2) label
         account: 10000000
         benchmark: *benchmark
         exchange_kwargs:
@@ -129,7 +129,7 @@ task:
             segments:
                 train: [2015-01-02, 2022-12-31]
                 valid: [2023-01-01, 2024-12-31]
-                test: [2025-01-01, 2026-02-07]
+                test: [2025-01-01, 2026-02-04]  # End 2 days earlier to avoid IndexError with Ref($close, -2) label
     record: 
         - class: SignalRecord
           module_path: qlib.workflow.record_temp

@@ -79,7 +79,7 @@ def main(path=None, step_n=None, direction=None, stop_event=None):
         if path is None:
             model_loop = AlphaAgentLoop(ALPHA_AGENT_FACTOR_PROP_SETTING, potential_direction=direction, stop_event=stop_event, use_local=use_local)
         else:
-            model_loop = AlphaAgentLoop.load(path, use_local=use_local)
+            model_loop = AlphaAgentLoop.load(path, use_local=use_local, stop_event=stop_event)
         model_loop.run(step_n=step_n, stop_event=stop_event)
     except Exception as e:
         logger.error(f"An error occurred during execution: {str(e)}")

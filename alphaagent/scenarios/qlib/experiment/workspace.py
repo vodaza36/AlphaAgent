@@ -38,19 +38,25 @@ class QlibFBWorkspace(FBWorkspace):
 
         # 运行Qlib回测
         logger.info(f"Execute {'Local' if use_local else 'Docker container'} Backtest: qrun {qlib_config_name}")
-        execute_log = qtde.run(
+        backtest_log = qtde.run(
             local_path=str(self.workspace_path),
             entry=f"qrun {qlib_config_name}",
             env=run_env,
         )
 
+        if "IndexError" in backtest_log or "ERROR" in backtest_log:
+            logger.warning(f"Backtest execution may have encountered errors:\n{backtest_log[-500:]}")
+
         # 处理结果
         logger.info(f"Read {'Local' if use_local else 'Docker container'} Backtest Result")
-        execute_log = qtde.run(
+        result_log = qtde.run(
             local_path=str(self.workspace_path),
             entry="python read_exp_res.py",
             env=run_env,
         )
+
+        if "Error" in result_log or "sys.exit(1)" in result_log:
+            logger.warning(f"Result extraction may have failed:\n{result_log[-500:]}")
 
         # 加载结果
         try:
