@@ -250,3 +250,60 @@ Stocks exhibiting more negative realized return skewness and greater frequency o
 | 8 | h_20260209_008 | order-flow-microstructure | Order Flow Imbalance via Close Location | Close-location-value accumulated * volume |
 | 9 | h_20260209_009 | overnight-intraday | Overnight Return Premium Exploitation | Overnight vs intraday return persistence |
 | 10 | h_20260209_010 | skewness-tail-risk | Realized Skewness Tail Risk Premium | Realized skewness + downside tail count |
+
+---
+
+## Mining Results (step_n=5, run 2026-02-09)
+
+> Baseline SOTA (Alpha158): annualized_return=0.0358, information_ratio=0.3376, max_drawdown=-0.0883, IC=0.0058
+
+### Results Ranked by Profitability
+
+| Rank | Hypothesis | Theme | Ann. Return | Info Ratio | Max Drawdown | IC | Beats SOTA? | Worth Trading? |
+|------|-----------|-------|-------------|------------|--------------|------|-------------|----------------|
+| 1 | **H3** | volatility-risk | **0.1511** | **1.0066** | **-0.0752** | **0.0070** | YES (4/4) | **YES** - Best overall. Beats SOTA on all metrics. IR >1.0, tight drawdown. |
+| 2 | **H6** | technical-patterns | **0.1432** | **1.3196** | **-0.0496** | 0.0026 | YES (3/4) | **YES** - Best risk-adjusted. Highest IR (1.32), shallowest drawdown (-5%). |
+| 3 | **H4** | volume-liquidity | **0.1152** | **0.6928** | -0.1195 | -0.0021 | YES (2/4) | **MAYBE** - Strong return but negative IC and deep drawdown. Needs more validation. |
+| 4 | **H2** | mean-reversion | **0.1110** | **0.7869** | **-0.0868** | 0.0028 | YES (3/4) | **YES** - Solid across the board. Good IR, drawdown better than SOTA. |
+| 5 | **H9** | overnight-intraday | **0.0504** | **0.4420** | -0.1373 | 0.0016 | YES (2/4) | **NO** - Marginal edge, deep drawdown (-13.7%). Not worth the risk. |
+| 6 | **H7** | regime-change | 0.0346 | 0.2211 | -0.1145 | 0.0018 | NO (0/4) | **NO** - Barely matches SOTA return, worse on all other metrics. |
+| 7 | **H5** | cross-sectional | 0.0102 | 0.1107 | -0.1119 | 0.0017 | NO (0/4) | **NO** - Weak returns, poor risk-adjusted performance. |
+| 8 | **H1** | momentum-trend | -0.0157 | -0.1456 | -0.1515 | 0.0082 | NO (1/4) | **NO** - Negative returns. High IC suggests factor signal exists but direction is wrong. |
+| 9 | **H10** | skewness-tail-risk | -0.0664 | -0.6099 | -0.1998 | -0.0015 | NO (0/4) | **NO** - Worst performer. Deep drawdown (-20%), negative everything. |
+| -- | ~~H8~~ | ~~order-flow~~ | ~~11.0785~~ | ~~0.9388~~ | ~~-0.1059~~ | ~~0.0043~~ | ~~ANOMALOUS~~ | **DISCARD** - 1100% return is spurious (data leak / look-ahead bias). |
+
+### Top 3 Tradeable Hypotheses
+
+#### 1. H3: Asymmetric Downside Volatility Premium (BEST OVERALL)
+- **Return:** 15.1% annualized (4.2x SOTA)
+- **Risk:** IR 1.01, max drawdown -7.5%
+- **Why trade:** Beats SOTA on ALL 4 metrics. Strong theoretical grounding in asymmetric IVOL pricing. Robust factor construction using downside semi-variance ratios.
+- **Best factors discovered:**
+  - `SUMIF(POW($return, 2), 252, $return < 0) / (TS_VAR($return, 252) * 252 + 1e-8)`
+  - `TS_STD($return, 20) / (TS_STD($return, 252) + 1e-8)`
+  - `(SUMIF(POW($return, 2), 252, $return < 0) / (TS_VAR($return, 252) * 252 + 1e-8)) * (TS_STD($return, 252) / (TS_STD($return, 20) + 1e-8))`
+
+#### 2. H6: MACD-RSI Interaction Alpha (BEST RISK-ADJUSTED)
+- **Return:** 14.3% annualized (4.0x SOTA)
+- **Risk:** IR 1.32 (highest), max drawdown -5.0% (best)
+- **Why trade:** Highest information ratio and shallowest drawdown of all runs. Multi-indicator interaction captures nonlinear behavioral signals.
+- **Best factors discovered:**
+  - `RANK(MACD($close, 12, 26) * SIGN($close - TS_MEAN($close, 20)) / (TS_MEAN($volume, 5) + 1e-8) * ((RSI($close, 14) - 50) / 50))`
+  - `RANK(SIGN(MACD($close, 12, 26)) * (($close - BB_MIDDLE($close, 20)) / (TS_STD($close, 20) + 1e-8)) * (($volume / (TS_MEAN($volume, 20) + 1e-8)) - 1))`
+
+#### 3. H2: Volume-Conditioned Short-Term Reversal (MOST BALANCED)
+- **Return:** 11.1% annualized (3.1x SOTA)
+- **Risk:** IR 0.79, max drawdown -8.7% (better than SOTA)
+- **Why trade:** Consistent improvement across return, IR, and drawdown. Well-understood microstructure mechanism. Simple, interpretable factors.
+- **Best factors discovered:**
+  - `(TS_MEAN($return, 5) - TS_MEAN($return, 20)) / (TS_STD($return, 20) + 1e-8) * SIGN((TS_MEAN($volume, 5) / (TS_MEAN($volume, 20) + 1e-8)) - 1)`
+  - `TS_ZSCORE(SUMAC($return, 5), 20) * ((TS_MEAN($volume, 5) / (TS_MEAN($volume, 20) + 1e-8)) - 1)`
+
+### Key Observations
+
+1. **5 of 10 hypotheses beat SOTA** on annualized return (H2, H3, H4, H6, H9)
+2. **3 hypotheses are tradeable** with confidence (H3, H6, H2)
+3. **H8 results are spurious** -- 1100% annualized return indicates data issues
+4. **IC was generally weak** -- only H1 (0.0082) and H3 (0.0070) exceeded SOTA IC, but LightGBM still extracted value from combined features
+5. **Volatility and technical factors outperformed** pure momentum and tail-risk approaches
+6. **Mean-reversion factors (H2) showed consistent edge** with the simplest factor construction
