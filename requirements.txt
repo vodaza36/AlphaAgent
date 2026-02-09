@@ -16,6 +16,7 @@ catboost==1.2.8
 numpy==1.23.5 # we use numpy as default data format. So we have to install numpy
 pandas==1.5.3 # we use pandas as default data format. So we have to install pandas
 pandarallel # parallelize pandas
+yahooquery # fetch data from Yahoo Finance
 matplotlib
 langchain
 langchain-community

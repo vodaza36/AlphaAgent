@@ -23,6 +23,38 @@ from yahooquery import Ticker
 from alphaagent.core.conf import RD_AGENT_SETTINGS
 
 
+def get_project_root() -> Path:
+    """
+    Find the project root directory by searching for marker files.
+
+    This handles both editable installs and regular source usage by
+    searching upward from the current file or cwd for pyproject.toml.
+
+    Returns:
+        Path to the project root directory
+    """
+    # Try from current working directory first (most reliable for editable installs)
+    current = Path.cwd()
+    for _ in range(10):  # Limit search depth
+        if (current / "pyproject.toml").exists() and (current / "qlib").exists():
+            return current
+        if current.parent == current:  # Reached filesystem root
+            break
+        current = current.parent
+
+    # Fallback: try from __file__ location
+    current = Path(__file__).resolve().parent
+    for _ in range(10):
+        if (current / "pyproject.toml").exists() and (current / "qlib").exists():
+            return current
+        if current.parent == current:
+            break
+        current = current.parent
+
+    # Last resort: assume standard structure
+    return Path(__file__).parent.parent.parent.parent
+
+
 def get_data_dir() -> Path:
     """
     Get the resolved Qlib data directory path.
@@ -41,9 +73,7 @@ def get_data_zip_path() -> Path:
     Returns:
         Path to data/us_data.zip in the project root
     """
-    # Assume project root is 3 levels up from this file
-    # alphaagent/app/utils/data.py -> ../../.. -> project root
-    project_root = Path(__file__).parent.parent.parent.parent
+    project_root = get_project_root()
     return project_root / "data" / "us_data.zip"
 
 
@@ -158,7 +188,7 @@ def data_refresh() -> None:
     This is adapted from prepare_us_data_v2.py
     """
     # Add qlib scripts to path
-    project_root = Path(__file__).parent.parent.parent.parent
+    project_root = get_project_root()
     qlib_scripts = project_root / "qlib" / "scripts"
     sys.path.insert(0, str(qlib_scripts))
     sys.path.insert(0, str(qlib_scripts / "data_collector" / "yahoo"))

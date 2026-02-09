@@ -1,45 +1,23 @@
 {
   "version": 1,
   "resources": [
-    {
-      "url": "https://arxiv.org/abs/2408.03594",
-      "title": "Forecasting High Frequency Order Flow Imbalance using Hawkes Processes",
-      "source_type": "arxiv",
-      "extraction_count": 1,
-      "max_extractions": 3,
-      "themes_extracted": ["order-flow-volume-reversal"],
-      "first_seen": "2026-02-07T10:30:00Z",
-      "last_accessed": "2026-02-07T10:30:00Z"
-    },
-    {
-      "url": "https://arxiv.org/abs/2505.17388",
-      "title": "Stochastic Price Dynamics in Response to Order Flow Imbalance: Evidence from CSI 300 Index Futures",
-      "source_type": "arxiv",
-      "extraction_count": 1,
-      "max_extractions": 3,
-      "themes_extracted": ["order-flow-volume-reversal"],
-      "first_seen": "2026-02-07T10:30:00Z",
-      "last_accessed": "2026-02-07T10:30:00Z"
-    },
-    {
-      "url": "https://arxiv.org/abs/2511.08571",
-      "title": "Forecast-to-Fill: Benchmark-Neutral Alpha and Billion-Dollar Capacity in Gold Futures (2015–2025)",
-      "source_type": "arxiv",
-      "extraction_count": 1,
-      "max_extractions": 3,
-      "themes_extracted": ["order-flow-volume-reversal"],
-      "first_seen": "2026-02-07T10:30:00Z",
-      "last_accessed": "2026-02-07T10:30:00Z"
-    },
-    {
-      "url": "https://arxiv.org/abs/2505.08180",
-      "title": "Forecasting Intraday Volume in Equity Markets with Machine Learning",
-      "source_type": "arxiv",
-      "extraction_count": 1,
-      "max_extractions": 3,
-      "themes_extracted": ["order-flow-volume-reversal"],
-      "first_seen": "2026-02-07T10:30:00Z",
-      "last_accessed": "2026-02-07T10:30:00Z"
-    }
+    {"url": "https://quantpedia.com/strategies/residual-momentum-factor", "title": "Residual Momentum Factor - Quantpedia", "source_type": "blog", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["momentum-trend"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5561720", "title": "Momentum factor investing: Evidence and evolution", "source_type": "ssrn", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["momentum-trend"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://arxiv.org/abs/2502.16789", "title": "AlphaAgent: Autonomous LLM Alpha Factor Mining", "source_type": "arxiv", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["momentum-trend"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://www.nber.org/papers/w30917", "title": "Reversals and the Returns to Liquidity Provision", "source_type": "nber", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["mean-reversion"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://www.sciencedirect.com/science/article/abs/pii/S0378426624002577", "title": "Good idiosyncratic volatility, bad idiosyncratic volatility", "source_type": "journal", "extraction_count": 2, "max_extractions": 3, "themes_extracted": ["volatility-risk", "skewness-tail-risk"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://www.nber.org/papers/w33037", "title": "Trading Volume Alpha", "source_type": "nber", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["volume-liquidity"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://www.tandfonline.com/doi/full/10.1080/1351847X.2024.2303092", "title": "Persistence or reversal? Abnormal trading volume on stock returns", "source_type": "journal", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["volume-liquidity"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://arxiv.org/abs/2512.11913", "title": "Not All Factors Crowd Equally", "source_type": "arxiv", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["cross-sectional-dispersion"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://arxiv.org/html/2511.12490v1", "title": "Discovery of a 13-Sharpe OOS Factor: Drift Regimes", "source_type": "arxiv", "extraction_count": 2, "max_extractions": 3, "themes_extracted": ["cross-sectional-dispersion", "regime-change"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://arxiv.org/html/2508.14656v1", "title": "Deep Learning for Short-Term Equity Trend Forecasting", "source_type": "arxiv", "extraction_count": 2, "max_extractions": 3, "themes_extracted": ["technical-patterns", "volume-liquidity"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://arxiv.org/html/2601.19504v1", "title": "Generating Alpha: A Hybrid AI-Driven Trading System", "source_type": "arxiv", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["technical-patterns"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://arxiv.org/html/2410.14841v1", "title": "Dynamic Factor Allocation Leveraging Regime-Switching Signals", "source_type": "arxiv", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["regime-change"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://arxiv.org/html/2402.05272v2", "title": "Downside Risk Reduction Using Regime-Switching Signals", "source_type": "arxiv", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["regime-change"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://www.cis.upenn.edu/~mkearns/finread/Chordia_buy-sell_orders.pdf", "title": "Order Imbalance, Liquidity, and Market Returns", "source_type": "academic", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["order-flow-microstructure"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://arxiv.org/html/2507.04481v1", "title": "Does Overnight News Explain Overnight Returns?", "source_type": "arxiv", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["overnight-intraday"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5004991", "title": "Overnight Returns and the Timing of Trading Volume", "source_type": "ssrn", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["overnight-intraday"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://www.sciencedirect.com/science/article/abs/pii/S0304405X15001257", "title": "Does Realized Skewness Predict the Cross-Section of Equity Returns?", "source_type": "journal", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["skewness-tail-risk"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"},
+    {"url": "https://www.nber.org/system/files/working_papers/w19375/w19375.pdf", "title": "Tail Risk and Asset Prices", "source_type": "nber", "extraction_count": 1, "max_extractions": 3, "themes_extracted": ["skewness-tail-risk"], "first_seen": "2026-02-09T00:00:00Z", "last_accessed": "2026-02-09T00:00:00Z"}
   ]
 }

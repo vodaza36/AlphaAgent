@@ -2,27 +2,250 @@
   "version": 1,
   "hypotheses": [
     {
-      "id": "h_20260207_001",
-      "hypothesis": "Recent research on order flow imbalance demonstrates mean-reverting Ornstein-Uhlenbeck dynamics with extreme kurtosis and persistent autocorrelation decay in equity markets (arXiv:2505.17388, 2025). This occurs because order flow imbalances create temporary price dislocations that systematically revert as liquidity providers absorb inventory shocks. Combining volume-price correlation patterns with cross-sectional commonality (as shown in arXiv:2505.08180 with R² improvements of 2.4x) can identify stocks where order flow mean-reversion is strongest, particularly when volume spikes coincide with extreme price-volume decorrelation periods indicating liquidity stress.",
-      "direction_string": "Stocks with high volume-price decorrelation combined with recent volume spikes exhibit predictable mean-reversion as order flow imbalances systematically unwind when cross-sectional liquidity commonality returns to equilibrium.",
+      "id": "h_20260209_001",
+      "hypothesis": "Residual momentum -- the component of past returns orthogonal to market beta -- decays significantly slower than raw price momentum and avoids the long-term reversal that plagues conventional momentum strategies. Quantpedia and Blitz et al. show that ranking stocks on 12-month residual returns (standardized by residual volatility) produces risk-adjusted profits roughly twice those of total-return momentum, with only half the volatility and a monthly Sharpe ratio of 0.48 vs 0.25. We hypothesize that constructing a volatility-normalized, volume-confirmed residual trend signal -- where the residual is approximated by regressing returns against a cross-sectional mean proxy and the signal is amplified when volume trend aligns with price trend -- will generate decay-resistant alpha in the S&P 500 universe. This approach exploits the finding from Baltussen et al. (2026) that firm-specific momentum is robust across 150 years of data and is less susceptible to crowding-driven decay.",
+      "direction_string": "Construct volatility-normalized residual momentum factors that isolate firm-specific trend from market beta, confirmed by volume trend alignment, to capture decay-resistant alpha from idiosyncratic price continuation.",
       "source_urls": [
-        "https://arxiv.org/abs/2505.17388",
-        "https://arxiv.org/abs/2505.08180",
-        "https://arxiv.org/abs/2408.03594"
+        "https://quantpedia.com/strategies/residual-momentum-factor",
+        "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5561720",
+        "https://arxiv.org/abs/2502.16789",
+        "https://www.venn.twosigma.com/insights/momentum-and-trend-following"
       ],
       "source_titles": [
-        "Stochastic Price Dynamics in Response to Order Flow Imbalance: Evidence from CSI 300 Index Futures",
-        "Forecasting Intraday Volume in Equity Markets with Machine Learning",
-        "Forecasting High Frequency Order Flow Imbalance using Hawkes Processes"
+        "Residual Momentum Factor - Quantpedia",
+        "Momentum factor investing: Evidence and evolution (Baltussen et al.)",
+        "AlphaAgent: Autonomous LLM Alpha Factor Mining (arXiv:2502.16789)",
+        "Momentum vs Trend Following - Two Sigma Venn"
       ],
-      "research_theme": "order-flow-volume-reversal",
+      "research_theme": "momentum-trend",
       "suggested_factors": [
-        "REGRESI($close, $volume, 20)",
-        "RANK(TS_STD($volume, 10) / TS_MEAN($volume, 60))",
-        "TS_CORR($close, $volume, 20) - MEAN(TS_CORR($close, $volume, 20))"
+        "RANK(REGRESI($close, SEQUENCE(252), 252) / TS_STD(REGRESI($close, SEQUENCE(252), 252), 60))",
+        "DECAYLINEAR($close / TS_MEAN($close, 60) - 1, 20) * SIGN(TS_MEAN($volume, 10) - TS_MEAN($volume, 60))",
+        "RANK(TS_MEAN($return, 240) - TS_MEAN($return, 20)) / TS_STD($return, 60) * (COUNT($volume > TS_MEAN($volume, 60), 20) / 20)"
       ],
       "status": "unused",
-      "created_at": "2026-02-07T10:30:00Z"
+      "created_at": "2026-02-09T00:00:00Z"
+    },
+    {
+      "id": "h_20260209_002",
+      "hypothesis": "Short-term return reversals are stronger when conditioned on abnormal volume and elevated volatility, consistent with microstructure-driven overreaction. Dai and Medhat (2024, Financial Analysts Journal) show that higher volatility produces faster and initially stronger reversals, while lower turnover leads to more persistent reversals. Da et al. demonstrate that the non-fundamental component of returns (residual after removing cash-flow news) reverses more reliably, generating risk-adjusted alpha four times larger than unconditional reversal. By constructing volume-and-volatility-adjusted reversal signals that isolate the liquidity-demand component of recent returns, we can capture mean reversion alpha that is both stronger and more decay-resistant than naive past-return reversal.",
+      "direction_string": "Exploit short-term mean reversion by ranking stocks on volatility-normalized, volume-weighted 5-day return deviations from their rolling mean, going long oversold and short overbought names where abnormal volume signals liquidity-driven overreaction.",
+      "source_urls": [
+        "https://www.nber.org/papers/w30917",
+        "https://www3.nd.edu/~zda/Reversal.pdf",
+        "https://insight.factset.com/how-much-alpha-can-be-derived-from-a-mean-reversion-strategy",
+        "https://www.quantseeker.com/p/short-term-mean-reversion-in-equity"
+      ],
+      "source_titles": [
+        "Reversals and the Returns to Liquidity Provision (Dai & Medhat, Financial Analysts Journal 2024)",
+        "A Closer Look at the Short-Term Return Reversal (Da, Liu, Schaumburg)",
+        "How Much Alpha Can Be Derived from a Mean Reversion Strategy (FactSet)",
+        "Short-Term Mean Reversion in Equity ETFs (QuantSeeker)"
+      ],
+      "research_theme": "mean-reversion",
+      "suggested_factors": [
+        "RANK(TS_ZSCORE($close, 20) * -1)",
+        "RANK(($close - TS_MEAN($close, 5)) / TS_STD($close, 20) * ($volume / TS_MEAN($volume, 20)) * -1)",
+        "RANK(DECAYLINEAR($return * -1, 5) / TS_STD($return, 20))"
+      ],
+      "status": "unused",
+      "created_at": "2026-02-09T00:00:00Z"
+    },
+    {
+      "id": "h_20260209_003",
+      "hypothesis": "Stocks with a higher ratio of downside realized semi-variance to total realized variance are underpriced and earn higher future returns, consistent with the asymmetric volatility pricing documented by Bollerslev, Li & Todorov (JFQA 2020) and Liu & Zhu (JBF 2025) who show that expected idiosyncratic good-minus-bad volatility (EIGMB) is negatively and significantly associated with future returns. The mechanism is that lottery-seeking investors overpay for upside-volatile stocks while underpricing stocks whose volatility comes predominantly from the downside, creating a cross-sectional return spread. A mean-reversion signal in realized volatility further enhances the effect, as stocks transitioning from high to low IVOL regimes tend to outperform.",
+      "direction_string": "Go long stocks where downside semi-variance dominates total variance and where recent realized volatility has contracted relative to its longer-term average, exploiting the asymmetric IVOL pricing anomaly.",
+      "source_urls": [
+        "https://www.sciencedirect.com/science/article/abs/pii/S0378426624002577",
+        "https://public.econ.duke.edu/~boller/Papers/jfqa_19.pdf",
+        "https://business.columbia.edu/sites/default/files-efs/pubfiles/3361/ang_high_idiosyncratic_volatility.pdf",
+        "https://www.nber.org/system/files/working_papers/w10852/w10852.pdf"
+      ],
+      "source_titles": [
+        "Good idiosyncratic volatility, bad idiosyncratic volatility, and the cross-section of stock returns (Liu & Zhu, JBF 2025)",
+        "Good Volatility, Bad Volatility, and the Cross Section of Stock Returns (Bollerslev, Li & Todorov, JFQA 2020)",
+        "High Idiosyncratic Volatility and Low Returns (Ang et al.)",
+        "The Cross-Section of Volatility and Expected Returns (Ang, Hodrick, Xing & Zhang, NBER)"
+      ],
+      "research_theme": "volatility-risk",
+      "suggested_factors": [
+        "RANK(SUMIF(POW($return, 2), 20, $return < 0) / (TS_SUM(POW($return, 2), 20) + 1e-8))",
+        "RANK((TS_STD($return, 60) - TS_STD($return, 20)) / (TS_STD($return, 60) + 1e-8))",
+        "RANK(SUMIF(POW($return, 2), 20, $return < 0) - SUMIF(POW($return, 2), 20, $return > 0))"
+      ],
+      "status": "unused",
+      "created_at": "2026-02-09T00:00:00Z"
+    },
+    {
+      "id": "h_20260209_004",
+      "hypothesis": "Abnormal trading volume -- defined as the deviation of current volume from its recent rolling mean -- is a strong short-term cross-sectional predictor of stock returns. Research by Goyenko, Kelly, Moskowitz, Su & Zhang (NBER Working Paper 33037, 2024) demonstrates that the economic benefits of predicting individual stock volume are as large as those from return predictability itself. Furthermore, a 2024 European Journal of Finance study shows that extreme abnormal trading volume deciles generate positive returns in the short run (up to five weeks) followed by reversals, consistent with an investor-sentiment-driven mispricing framework. Volume-price divergence -- where price moves up on declining volume or vice versa -- signals weakening momentum and impending reversals, as confirmed by Li et al. (2025) who found that factors capturing this divergence pattern contribute significant alpha with Sharpe ratios above 1.6.",
+      "direction_string": "Stocks with abnormally high volume relative to their 20-day average exhibit short-term return continuation driven by attention and sentiment, while volume-price divergence (rising price on falling volume) signals momentum exhaustion and predicts reversals.",
+      "source_urls": [
+        "https://www.nber.org/papers/w33037",
+        "https://www.tandfonline.com/doi/full/10.1080/1351847X.2024.2303092",
+        "https://arxiv.org/html/2508.14656v1",
+        "https://ideas.repec.org/p/nbr/nberwo/33037.html"
+      ],
+      "source_titles": [
+        "Trading Volume Alpha (NBER Working Paper 33037, Goyenko, Kelly, Moskowitz, Su, Zhang 2024)",
+        "Persistence or reversal? The effects of abnormal trading volume on stock returns (European Journal of Finance, 2024)",
+        "Deep Learning for Short-Term Equity Trend Forecasting: A Behavior-Driven Multi-Factor Approach (arXiv, Li et al. 2025)",
+        "Trading Volume Alpha (IDEAS/RePEc mirror)"
+      ],
+      "research_theme": "volume-liquidity",
+      "suggested_factors": [
+        "RANK(TS_ZSCORE($volume, 20))",
+        "RANK(TS_CORR($volume, $close, 10))",
+        "RANK(DECAYLINEAR($volume / TS_MEAN($volume, 20) * SIGN(DELTA($close, 1)), 10))"
+      ],
+      "status": "unused",
+      "created_at": "2026-02-09T00:00:00Z"
+    },
+    {
+      "id": "h_20260209_005",
+      "hypothesis": "Cross-sectional return dispersion captures the degree of differentiation among stock returns and signals mean-reversion opportunities, particularly for mechanical factors. Research by Hua & Sun (2024) on factor crowding dynamics shows that mechanical signals (momentum, reversal) exhibit hyperbolic alpha decay under crowding (R-squared 0.37), while judgment-based relative-value signals remain resilient. Seidl et al. (2025) demonstrate that conditioning value and reversal signals on drift regimes amplifies cross-sectional predictability dramatically. Stocks contributing disproportionately to cross-sectional dispersion (high idiosyncratic volatility relative to the cross-section) with poor recent performance should exhibit stronger mean-reversion, as their extreme deviation from the cross-sectional distribution is more likely driven by temporary mispricing than permanent information.",
+      "direction_string": "Exploit cross-sectional return dispersion by going long stocks that are cross-sectionally cheap with high recent idiosyncratic volatility and poor short-term returns, as these high-dispersion-contribution stocks exhibit stronger mean-reversion tendencies.",
+      "source_urls": [
+        "https://arxiv.org/abs/2512.11913",
+        "https://arxiv.org/html/2511.12490v1",
+        "https://papers.ssrn.com/sol3/Delivery.cfm/5023380.pdf?abstractid=5023380&mirid=1",
+        "https://www.sciencedirect.com/science/article/pii/S0378426625001992"
+      ],
+      "source_titles": [
+        "Not All Factors Crowd Equally: Modeling, Measuring, and Trading on Alpha Decay",
+        "Discovery of a 13-Sharpe OOS Factor: Drift Regimes Unlock Hidden Cross-Sectional Predictability",
+        "Dynamics of Factor Crowding",
+        "Crowded spaces and anomalies"
+      ],
+      "research_theme": "cross-sectional-dispersion",
+      "suggested_factors": [
+        "INV(ZSCORE(TS_MEAN($return, 5)))",
+        "RANK(TS_STD($return, 20)) * RANK(INV(TS_SUM($return, 10)))",
+        "DECAYLINEAR(ZSCORE($return), 10) * INV(ZSCORE(TS_STD($return, 60)))"
+      ],
+      "status": "unused",
+      "created_at": "2026-02-09T00:00:00Z"
+    },
+    {
+      "id": "h_20260209_006",
+      "hypothesis": "Multiplicative interactions between momentum indicators (MACD) and mean-reversion oscillators (RSI, Bollinger Bands) capture nonlinear behavioral signals that standalone technical indicators miss. Research by Li et al. (2025, arxiv 2508.14656) found that the MACD-RSI product was the single highest-attributed alpha factor in SHAP analysis, outperforming all individual technical features. A hybrid AI trading system (Ravi et al., 2026, arxiv 2601.19504) demonstrated that combining trend-following via MACD with mean-reversion via RSI and Bollinger Bands achieved a Sharpe ratio of 1.68, compared to 0.48 for standalone rule-based strategies. Additionally, conditioning Bollinger Band breakouts on volume spikes filters out false signals, particularly during volatility expansion regimes where breakout strategies show the strongest predictive power.",
+      "direction_string": "Construct cross-indicator interaction factors that multiply momentum signals (MACD direction, RSI rate-of-change) with volatility breakout signals (Bollinger Band position) and volume confirmation, then cross-sectionally rank them to capture regime-adaptive reversal and continuation patterns.",
+      "source_urls": [
+        "https://arxiv.org/html/2508.14656v1",
+        "https://arxiv.org/html/2601.19504v1",
+        "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5775962"
+      ],
+      "source_titles": [
+        "Deep Learning for Short-Term Equity Trend Forecasting: A Behavior-Driven Multi-Factor Approach",
+        "Generating Alpha: A Hybrid AI-Driven Trading System Integrating Technical Analysis, Machine Learning and Financial Sentiment for Regime-Adaptive Equity Strategies",
+        "Bollinger Bands under Varying Market Regimes: A Comparative Study of Breakout and Mean-Reversion Strategies"
+      ],
+      "research_theme": "technical-patterns",
+      "suggested_factors": [
+        "RANK(MACD($close) * (RSI($close, 14) - 50))",
+        "RANK(($close - BB_UPPER($close, 20)) * ($volume / TS_MEAN($volume, 20)))",
+        "RANK(DELTA(RSI($close, 14), 5) * SIGN(MACD($close)))"
+      ],
+      "status": "unused",
+      "created_at": "2026-02-09T00:00:00Z"
+    },
+    {
+      "id": "h_20260209_007",
+      "hypothesis": "Stocks exhibit distinct 'drift regimes' detectable via the fraction of positive return days, and alpha signals are dramatically more effective when conditioned on regime state. Research by Li et al. (2025, arxiv 2511.12490) demonstrates that gating reversal and value signals by a drift regime indicator (>60% positive days in 63-day window) boosts Sharpe ratios from 1.2 to 13.2 out-of-sample. Complementary work on regime-switching factor allocation (Lezmi et al., 2024, arxiv 2410.14841) shows that short-term vs. long-term volatility ratios reliably detect bull-bear regime transitions, and factor strategies that adapt to the current volatility regime generate significantly higher risk-adjusted returns while reducing maximum drawdowns by approximately 50% (Nystrup et al., 2024, arxiv 2402.05272).",
+      "direction_string": "Construct regime-aware alpha factors that gate short-term reversal signals by stock-level drift regime indicators (fraction of positive return days over 63 days) and use volatility regime ratios (short-term vs long-term realized volatility) to switch between mean-reversion and momentum strategies.",
+      "source_urls": [
+        "https://arxiv.org/html/2511.12490v1",
+        "https://arxiv.org/html/2410.14841v1",
+        "https://arxiv.org/html/2402.05272v2"
+      ],
+      "source_titles": [
+        "Discovery of a 13-Sharpe OOS Factor: Drift Regimes Unlock Hidden Cross-Sectional Predictability",
+        "Dynamic Factor Allocation Leveraging Regime-Switching Signals",
+        "Downside Risk Reduction Using Regime-Switching Signals: A Statistical Jump Model Approach"
+      ],
+      "research_theme": "regime-change",
+      "suggested_factors": [
+        "FILTER(-TS_ZSCORE($return, 10), COUNT($return > 0, 63) > 38)",
+        "RANK(TS_STD($return, 10) / TS_STD($return, 60))",
+        "(TS_STD($return, 10) / TS_STD($return, 60) > 1) ? (-TS_ZSCORE($return, 5)) : (TS_MEAN($return, 20))"
+      ],
+      "status": "unused",
+      "created_at": "2026-02-09T00:00:00Z"
+    },
+    {
+      "id": "h_20260209_008",
+      "hypothesis": "Stocks exhibiting persistent directional order flow imbalance, proxied by the close location within the daily range weighted by volume, generate predictable short-term return continuation. Chordia et al. demonstrate that daily order imbalances are positively autocorrelated and that sell imbalances have roughly four times the price impact of buy imbalances. Federal Reserve research (2025) confirms that sustained unidirectional flow magnitude, rather than volume alone, amplifies price movements. By measuring the accumulation of volume-weighted close-location values and detecting asymmetric volume participation on up versus down days, we can identify stocks where informed flow is concentrated and returns are likely to persist.",
+      "direction_string": "Go long stocks with strong positive volume-weighted close-location accumulation (indicating persistent buy-side flow dominance) and short stocks with negative accumulation, exploiting the autocorrelation of order flow imbalance and asymmetric price impact.",
+      "source_urls": [
+        "https://www.cis.upenn.edu/~mkearns/finread/Chordia_buy-sell_orders.pdf",
+        "https://www.federalreserve.gov/econres/notes/feds-notes/order-flow-imbalances-and-amplification-of-price-movements-evidence-from-u-s-treasury-markets-20251103.html",
+        "https://arxiv.org/abs/2408.03594",
+        "https://arxiv.org/pdf/2508.06788"
+      ],
+      "source_titles": [
+        "Order Imbalance, Liquidity, and Market Returns (Chordia, Roll, Subrahmanyam)",
+        "Order Flow Imbalances and Amplification of Price Movements (Federal Reserve, 2025)",
+        "Forecasting High Frequency Order Flow Imbalance (arxiv, 2024)",
+        "Returns and Order Flow Imbalances: Intraday Dynamics (Takahashi, 2025)"
+      ],
+      "research_theme": "order-flow-microstructure",
+      "suggested_factors": [
+        "RANK(TS_SUM(($close - $low - ($high - $close)) / ($high - $low + 0.0001) * $volume, 10))",
+        "SUMIF($volume, 10, $return > 0) / (SUMIF($volume, 10, $return < 0) + 0.0001)",
+        "TS_CORR($volume * SIGN($return), DELAY($volume * SIGN($return), 1), 20)"
+      ],
+      "status": "unused",
+      "created_at": "2026-02-09T00:00:00Z"
+    },
+    {
+      "id": "h_20260209_009",
+      "hypothesis": "Academic research demonstrates that nearly all U.S. equity premium accrues overnight rather than during trading hours, with cumulative overnight returns exceeding intraday returns by approximately 7.2% annually (arXiv 2507.04481). This overnight-intraday return split exhibits a persistent negative contemporaneous correlation: stocks performing well intraday tend to underperform overnight and vice versa, creating a systematic reversal pattern driven by retail investor order flow at market open versus institutional execution at close. Perreten and Wallmeier (2024) further show that intraday trading volume patterns predict overnight returns, with U-shaped volume activity stocks earning significantly higher overnight premiums. Constructing factors that capture the magnitude and persistence of the overnight return component, as well as the overnight-intraday divergence, should yield cross-sectional alpha by identifying stocks with structurally favorable overnight drift characteristics.",
+      "direction_string": "Go long stocks with persistently high overnight returns relative to intraday returns, and short stocks where intraday returns consistently dominate, exploiting the retail-driven overnight premium and the systematic overnight-intraday reversal pattern.",
+      "source_urls": [
+        "https://arxiv.org/html/2507.04481v1",
+        "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5004991",
+        "https://elmwealth.com/night-moves-overnight-drift/",
+        "https://www.shareplanner.com/blog/strategies-for-trading/fading-the-gap-how-large-overnight-moves-in-spy-and-qqq-play-out-during-the-trading-day.html"
+      ],
+      "source_titles": [
+        "Does Overnight News Explain Overnight Returns? (arXiv 2025)",
+        "Overnight Returns and the Timing of Trading Volume (Perreten & Wallmeier 2024)",
+        "Night Moves: Is the Overnight Drift the Grandmother of All Market Anomalies? (Elm Wealth)",
+        "Fading the Gap: How SPY and QQQ Overnight Moves Play Out (SharePlanner)"
+      ],
+      "research_theme": "overnight-intraday",
+      "suggested_factors": [
+        "TS_MEAN(($open - DELAY($close, 1)) / DELAY($close, 1), 5)",
+        "RANK(TS_MEAN(($open - DELAY($close, 1)) / DELAY($close, 1), 10)) - RANK(TS_MEAN(($close - $open) / $open, 10))",
+        "(($open - DELAY($close, 1)) / DELAY($close, 1)) / TS_STD($return, 20)"
+      ],
+      "status": "unused",
+      "created_at": "2026-02-09T00:00:00Z"
+    },
+    {
+      "id": "h_20260209_010",
+      "hypothesis": "Stocks exhibiting more negative realized return skewness and greater frequency of extreme downside moves earn higher subsequent returns, driven by a tail risk premium. Amaya et al. (2015, Journal of Financial Economics) demonstrate that sorting stocks by realized skewness generates a significant negative return spread, with the long-short portfolio earning 19 basis points per week (t-statistic = 3.70), robust to Fama-French and Carhart factor controls. Kelly and Jiang (2014, NBER) show that individual stock tail risk exposure is positively priced in the cross-section, as investors demand compensation for bearing left-tail crash risk. A 2024 study in the Journal of Banking and Finance further finds that decomposing idiosyncratic volatility into good (upside) versus bad (downside) components reveals that downside return asymmetry negatively and significantly predicts future stock returns, even after controlling for expected skewness.",
+      "direction_string": "Go long stocks with more negative realized skewness and higher downside tail frequency over the past month, as these carry a tail risk premium reflecting investor aversion to left-tail crash events and lottery-ticket preference for positively-skewed payoffs.",
+      "source_urls": [
+        "https://www.sciencedirect.com/science/article/abs/pii/S0304405X15001257",
+        "https://www.nber.org/system/files/working_papers/w19375/w19375.pdf",
+        "https://www.sciencedirect.com/science/article/abs/pii/S0378426624002577",
+        "https://hal.science/hal-04927211/document"
+      ],
+      "source_titles": [
+        "Does Realized Skewness Predict the Cross-Section of Equity Returns? (Amaya et al., JFE 2015)",
+        "Tail Risk and Asset Prices (Kelly and Jiang, NBER 2014)",
+        "Good Idiosyncratic Volatility, Bad Idiosyncratic Volatility, and the Cross-Section of Stock Returns (JBF 2024)",
+        "High-Frequency Tail Risk Premium and Stock Return Predictability (JFQA 2024)"
+      ],
+      "research_theme": "skewness-tail-risk",
+      "suggested_factors": [
+        "RANK(TS_MEAN(POW($return, 3), 20) / POW(TS_STD($return, 20), 3))",
+        "RANK(COUNT($return < TS_MEAN($return, 60) - 2 * TS_STD($return, 60), 20))",
+        "RANK(SUMIF(POW($return, 2), 20, $return < 0) / (SUMIF(POW($return, 2), 20, $return > 0) + 1e-8))"
+      ],
+      "status": "unused",
+      "created_at": "2026-02-09T00:00:00Z"
     }
   ]
 }
